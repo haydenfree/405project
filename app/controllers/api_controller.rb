@@ -10,4 +10,38 @@ class ApiController < ActionController::API
             render json: {status: "-2", error: "SQL Constraint Exception"}.to_json, status: :ok
         end
     end
+
+    def seeuser
+        
+    end
+
+    def suggestions
+        
+    end
+
+    def poststory
+        
+    end
+
+    def reprint
+        
+    end
+
+    def follow
+        
+    end
+
+    def unfollow
+        
+    end
+
+    def block
+        
+    end
+
+    def timeline
+        
+    end
+
+    
 end
