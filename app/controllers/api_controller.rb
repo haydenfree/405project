@@ -1,10 +1,12 @@
 class ApiController < ActionController::API
     
-    def authenticate(handle, password)
+    def connect
         client = Mysql2::Client.new(:host => "localhost", :username => "root", :password => "ZoeqxUDQbBxuHA7mGX7p", :database => "SMPDB")
+        return client
+    end
 
-        handle = client.escape(handle)
-        password = client.escape(password)
+    def authenticate(handle, password)
+        client = connect()
 
         results = client.query("SELECT * FROM Identity i WHERE (i.handle = \"#{handle}\") AND (i.pass = \"#{password}\")")
 
