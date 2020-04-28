@@ -1,13 +1,25 @@
 class ApiController < ActionController::API
+    
+    def authenticate(handle, password)
+        client = Mysql2::Client.new(:host => "localhost", :username => "root", :password => "ZoeqxUDQbBxuHA7mGX7p", :database => "SMPDB")
+
+        handle = client.escape(handle)
+        password = client.escape(password)
+
+        results = client.query("SELECT * FROM Identity i WHERE (i.handle = \"#{handle}\") AND (i.pass = \"#{password}\")")
+
+        if results.count == 1
+            return true
+        else
+            return false
+        end
+    end
+    
     def createuser
-        # accessing params
-        puts params[:handle]
-        puts params[:password]
-        # conditionally render json
-        if FALSE
+        if authenticate(params[:handle], params[:password])
             render json: {handle: params[:handle], pass: params[:password]}.to_json, status: :ok
         else
-            render json: {status: "-2", error: "SQL Constraint Exception"}.to_json, status: :ok
+            render json: {status: "-1", error: "Authentication failed"}.to_json, status: :ok
         end
     end
 
