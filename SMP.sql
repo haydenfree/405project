@@ -1,7 +1,7 @@
 USE mysql;
-DROP DATABASE SMPDB;
-CREATE DATABASE SMPDB;
-USE SMPDB;
+DROP DATABASE SMPDB_test;
+CREATE DATABASE SMPDB_test;
+USE SMPDB_test;
 CREATE TABLE Identity 
         (idnum BIGINT AUTO_INCREMENT PRIMARY KEY,
          handle   VARCHAR(100) UNIQUE,
@@ -19,14 +19,14 @@ CREATE TABLE Story
          url     VARCHAR(100),
          expires DATETIME,
          tstamp  TIMESTAMP,
-         CONSTRAINT fk_id FOREIGN KEY(idnum) REFERENCES Identity(idnum)
+         FOREIGN KEY(idnum) REFERENCES Identity(idnum)
         ) COMMENT="The Story Table";
 CREATE TABLE Follows 
         (follower   BIGINT,
          followed   BIGINT,
          tstamp     TIMESTAMP,
-CONSTRAINT fk_follower FOREIGN KEY(follower) REFERENCES Identity(idnum),
-CONSTRAINT fk_followed FOREIGN KEY(followed) REFERENCES Identity(idnum)
+	 FOREIGN KEY(follower) REFERENCES Identity(idnum),
+	 FOREIGN KEY(followed) REFERENCES Identity(idnum)
         ) COMMENT="The Follows Table";
 CREATE TABLE Reprint
         (rpnum      BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -34,18 +34,18 @@ CREATE TABLE Reprint
          sidnum     BIGINT,
          likeit     BOOLEAN,
          tstamp  TIMESTAMP,
-CONSTRAINT fk_idnum FOREIGN KEY(idnum) REFERENCES Identity(idnum),
-CONSTRAINT fk_sidnum FOREIGN KEY(sidnum) REFERENCES Story(sidnum)
+	 FOREIGN KEY(idnum) REFERENCES Identity(idnum),
+	 FOREIGN KEY(sidnum) REFERENCES Story(sidnum)
         ) COMMENT="The Reprint Table";
 CREATE TABLE Block 
         (blknum     BIGINT AUTO_INCREMENT PRIMARY KEY,
          idnum      BIGINT,
          blocked    BIGINT,
          tstamp     TIMESTAMP,
-CONSTRAINT fk_xidnum  FOREIGN KEY(idnum)   REFERENCES Identity(idnum),
-CONSTRAINT fk_blocked FOREIGN KEY(blocked) REFERENCES Identity(idnum)
+	 FOREIGN KEY(idnum)   REFERENCES Identity(idnum),
+	 FOREIGN KEY(blocked) REFERENCES Identity(idnum)
         ) COMMENT="The Block Table";
-GRANT ALL ON SMPDB.* TO 'ccte222'@'ccte222.cs.uky.edu' IDENTIFIED BY 'mysqlpass'; 
-GRANT ALL on SMPDB.* TO 'paul'@'belgarath.cs.uky.edu' IDENTIFIED BY 'jellydonuts!';
-GRANT ALL on SMPDB.* TO 'paul'@'paul.cs.uky.edu' IDENTIFIED BY 'jellydonuts!'; 
+GRANT ALL ON SMPDB_test.* TO 'ccte222'@localhost IDENTIFIED BY 'mysqlpass'; 
+GRANT ALL on SMPDB_test.* TO 'paul'@'belgarath.cs.uky.edu' IDENTIFIED BY 'jellydonuts!';
+GRANT ALL on SMPDB_test.* TO 'paul'@'paul.cs.uky.edu' IDENTIFIED BY 'jellydonuts!'; 
 FLUSH privileges;
