@@ -72,7 +72,7 @@ class ApiController < ActionController::API
                 results = client.query("select handle, fullname, location, email, bdate, joined from Identity where idnum = #{params[:userid]};")
             rescue => exception
                 # catch and render error if there is one
-                render json:{"status":"-2", "error":"#{exception}"}.to_json
+                render json:{"status":"0", "error":"#{exception}"}.to_json
             else
                 # if one user was found return the data
                 if results.count == 1
@@ -98,7 +98,7 @@ class ApiController < ActionController::API
                 results = client.query("select s.idnum, s.handle from Identity as a inner join Follows as b on (a.idnum = b.follower) inner join Follows as c on (b.followed = c.follower) inner join Identity as s on (c.followed = s.idnum) where a.handle = \"#{params[:handle]}\" and a.pass = \"#{params[:password]}\" and s.handle != \"#{params[:handle]}\" and s.idnum not in (select x.followed from Identity as y inner join Follows as x on (y.idnum = x.follower and y.handle = \"#{params[:handle]}\")) LIMIT 4;")
             rescue => exception
                 # catch and render error if there is one (there should not be any SQL errors here, but just in case)
-                render json:{"status":"-2", "error":"#{exception}"}.to_json
+                render json:{"status":"0", "error":"#{exception}"}.to_json
             else
                 # if there are no suggestions
                 if results.count == 0
@@ -175,7 +175,7 @@ class ApiController < ActionController::API
                         # run query
                         results = client.query("insert into Reprint (idnum, sidnum, likeit) select a.idnum, #{params[:storyid]}, #{params[:likeit]} from Identity as a where a.handle = \"#{params[:handle]}\" and a.pass = \"#{params[:password]}\";")
                     rescue => exception
-                        render json:{"status":"-2", "error":"#{exception}"}.to_json
+                        render json:{"status":"0", "error":"#{exception}"}.to_json
                     else
                         # return status 1 to indicate success
                         render json: {"status":"1"}.to_json, status: :ok
@@ -202,7 +202,7 @@ class ApiController < ActionController::API
                     # run query
                     results = client.query("insert into Follows (follower, followed) select a.idnum, #{params[:userid]} from Identity as a where (a.handle = \"#{params[:handle]}\" and a.pass = \"#{params[:password]}\") and not (exists (select x.followed from Identity as y inner join Follows as x on (y.idnum = x.follower and y.handle = \"#{params[:handle]}\" and x.followed = #{params[:userid]})));")
                 rescue => exception
-                    render json:{"status":"-2", "error":"#{exception}"}.to_json
+                    render json:{"status":"0", "error":"#{exception}"}.to_json
                 else
                     # return status 1 to indicate success
                     render json: {"status":"1"}.to_json, status: :ok
@@ -214,7 +214,22 @@ class ApiController < ActionController::API
     end
 
     def unfollow
-        
+        # authenticate returns idnum if handle+password combination works, so store it
+        if (authenticate(params[:handle], params[:password]))
+            # user auth worked - create connection for query
+            client = connect()
+            begin
+                # run query
+                results = client.query("delete from Follows where follower = (select a.idnum from Identity as a where a.handle = \"#{params[:handle]}\" and a.pass = \"#{params[:password]}\") and followed = #{params[:userid]};")
+            rescue => exception
+                render json:{"status":"0", "error":"#{exception}"}.to_json
+            else
+                # return status 1 to indicate success
+                render json: {"status":"1"}.to_json, status: :ok
+            end
+        else
+            render json: {"status_code":"-10", "error":"invalid credentials"}.to_json
+        end
     end
 
     def block
