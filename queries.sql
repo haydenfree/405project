@@ -1,7 +1,6 @@
 
 /*see user*/
-SELECT * from Identity where handle = "<username>" and pass = "<password>";
-
+select handle, fullname, location, email, bdate, joined from  Identity where idnum = 2;
 
 /*new Story*/
 insert into Story (idnum, chapter, url, expires) select a.idnum, "this is a test", "testurl.com", "2020/12/12 00:00:00" from Identity as a where a.handle = "@snapoleon0" and a.pass = "xZmN6L";
