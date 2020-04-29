@@ -15,7 +15,7 @@ CREATE TABLE Identity
 CREATE TABLE Story 
         (sidnum  BIGINT AUTO_INCREMENT PRIMARY KEY,
          idnum   BIGINT,
-         chapter VARCHAR(100),
+         chapter VARCHAR(100) NOT NULL,
          url     VARCHAR(100),
          expires DATETIME,
          tstamp  TIMESTAMP,
