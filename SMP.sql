@@ -33,11 +33,9 @@ CREATE TABLE Reprint
          idnum      BIGINT,
          sidnum     BIGINT,
          likeit     BOOLEAN,
-         newstory   BIGINT,
          tstamp  TIMESTAMP,
 CONSTRAINT fk_idnum FOREIGN KEY(idnum) REFERENCES Identity(idnum),
-CONSTRAINT fk_sidnum FOREIGN KEY(sidnum) REFERENCES Story(sidnum),
-CONSTRAINT fk_newstory FOREIGN KEY(newstory) REFERENCES Story(sidnum)
+CONSTRAINT fk_sidnum FOREIGN KEY(sidnum) REFERENCES Story(sidnum)
         ) COMMENT="The Reprint Table";
 CREATE TABLE Block 
         (blknum     BIGINT AUTO_INCREMENT PRIMARY KEY,
