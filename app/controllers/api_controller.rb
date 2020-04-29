@@ -251,7 +251,27 @@ class ApiController < ActionController::API
     end
 
     def timeline
-        
+        if (authenticate(params[:handle], params[:password]))
+            # user auth worked - create connection for query
+            client = connect()
+            begin
+                # run query
+                results = client.query("select \"story\" as type, zz.handle as author, c.sidnum, c.chapter as chapter, c.tstamp as posted from Identity as a inner join Follows as b on (a.idnum = b.follower) inner join Story as c on (b.followed = c.idnum)inner join Identity as zz on (c.idnum = zz.idnum) where a.handle = \"#{params[:handle]}\" and c.tstamp between \"#{params[:oldest]}\" and \"#{params[:newest]}\" and not exists((select 1 from Identity as xx inner join Block as qq on (xx.idnum = qq.blocked) where xx.handle = \"#{params[:handle]}\" and qq.idnum = c.idnum)) UNION select \"reprint\", pp.handle, y.sidnum, y.chapter, y.tstamp from Identity as q inner join Follows as x on (q.idnum = x.follower) inner join Reprint as t on (x.followed = t.idnum) inner join Story as y on (t.sidnum = y.sidnum) inner join Identity as pp on (y.idnum = pp.idnum)where q.handle = \"#{params[:handle]}\" and y.tstamp between \"#{params[:oldest]}\" and \"#{params[:newest]}\" and t.likeit is false and not exists((select 1 from Identity as x inner join Block as q on (x.idnum = q.blocked) where x.handle = \"#{params[:handle]}\" and q.idnum = y.idnum))order by posted desc;")
+            rescue => exception
+                render json:{"status":"0", "error":"#{exception}"}.to_json
+            else
+                data = {}
+                current = 0
+                results.each do |row|
+                    current = current + 1
+                    data[current] = {"type":"#{row["type"].to_s}", "author":"#{row["author"].to_s}", "sidnum":"#{row["sidnum"].to_s}", "chapter":"#{row["chapter"].to_s}", "posted":"#{row["posted"].to_s}" }
+                end
+                data["status"] = "#{results.count}"
+                render json: data.to_json, status: :ok
+            end
+        else
+            render json: {"status_code":"-10", "error":"invalid credentials"}.to_json
+        end
     end
 
     
