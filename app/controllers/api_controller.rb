@@ -108,10 +108,10 @@ class ApiController < ActionController::API
             begin
                 if params[:expires]
                     # handle expires param
-                    results = client.query("insert into Story (idnum, chapter, url, expires) select a.idnum, \"#{params[:chapter]}\", \"#{params[:url]}\", \"#{params[:expires]}\" from Identity as a where a.handle = \"@snapoleon0\" and a.pass = \"xZmN6L\";")
+                    results = client.query("insert into Story (idnum, chapter, url, expires) select a.idnum, \"#{params[:chapter]}\", \"#{params[:url]}\", \"#{params[:expires]}\" from Identity as a where a.handle = \"#{params[:handle]}\" and a.pass = \"#{params[:password]}\";")
                 else
                     # story doesn't expire
-                    results = client.query("insert into Story (idnum, chapter, url) select a.idnum, \"#{params[:chapter]}\", \"#{params[:url]}\" from Identity as a where a.handle = \"@snapoleon0\" and a.pass = \"xZmN6L\";")
+                    results = client.query("insert into Story (idnum, chapter, url) select a.idnum, \"#{params[:chapter]}\", \"#{params[:url]}\" from Identity as a where a.handle = \"#{params[:handle]}\" and a.pass = \"#{params[:password]}\";")
                 end
             rescue => exception
                 # catch and render error if there is one
