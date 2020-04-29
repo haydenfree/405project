@@ -8,6 +8,6 @@ Rails.application.routes.draw do
   post 'api/reprint/:storyid', to: 'api#reprint'
   post 'api/follow/:userid', to: 'api#follow'
   post 'api/unfollow/:userid', to: 'api#unfollow'
-  post 'api/block', to: 'api#block'
+  post 'api/block/:userid', to: 'api#block'
   post 'api/timeline', to: 'api#timeline'
 end

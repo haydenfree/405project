@@ -233,7 +233,21 @@ class ApiController < ActionController::API
     end
 
     def block
-        
+        if (authenticate(params[:handle], params[:password]))
+            # user auth worked - create connection for query
+            client = connect()
+            begin
+                # run query
+                results = client.query("insert into Block (idnum, blocked) select a.idnum, #{params[:userid]} from Identity as a where a.handle = \"#{params[:handle]}\" and a.pass = \"#{params[:password]}\" and not exists(select * from Identity as a inner join Block as b on (a.idnum = b.idnum and a.handle = \"#{params[:handle]}\" and b.blocked = #{params[:handle]}));")
+            rescue => exception
+                render json:{"status":"0", "error":"#{exception}"}.to_json
+            else
+                # return status 1 to indicate success
+                render json: {"status":"1"}.to_json, status: :ok
+            end
+        else
+            render json: {"status_code":"-10", "error":"invalid credentials"}.to_json
+        end
     end
 
     def timeline
