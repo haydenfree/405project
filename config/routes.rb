@@ -6,7 +6,7 @@ Rails.application.routes.draw do
   post 'api/suggestions', to: 'api#suggestions'
   post 'api/poststory', to: 'api#poststory'
   post 'api/reprint/:storyid', to: 'api#reprint'
-  post 'api/follow', to: 'api#follow'
+  post 'api/follow/:userid', to: 'api#follow'
   post 'api/unfollow', to: 'api#unfollow'
   post 'api/block', to: 'api#block'
   post 'api/timeline', to: 'api#timeline'

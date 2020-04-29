@@ -190,7 +190,27 @@ class ApiController < ActionController::API
     end
 
     def follow
-        
+        # authenticate returns idnum if handle+password combination works, so store it
+        if ( this_user_id = authenticate(params[:handle], params[:password]) )
+            # check if the user trying to follow is blocked by user
+            if (is_blocked(this_user_id, params[:userid]))
+                render json:{"status":"0", "error":"blocked"}.to_json
+            else
+                # user auth worked and user is not blocked - create connection for query
+                client = connect()
+                begin
+                    # run query
+                    results = client.query("insert into Follows (follower, followed) select a.idnum, #{params[:userid]} from Identity as a where (a.handle = \"#{params[:handle]}\" and a.pass = \"#{params[:password]}\") and not (exists (select x.followed from Identity as y inner join Follows as x on (y.idnum = x.follower and y.handle = \"#{params[:handle]}\" and x.followed = #{params[:userid]})));")
+                rescue => exception
+                    render json:{"status":"-2", "error":"#{exception}"}.to_json
+                else
+                    # return status 1 to indicate success
+                    render json: {"status":"1"}.to_json, status: :ok
+                end
+            end
+        else
+            render json: {"status_code":"-10", "error":"invalid credentials"}.to_json
+        end
     end
 
     def unfollow
