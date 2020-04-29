@@ -20,7 +20,6 @@ class ApiController < ActionController::API
     def createuser
         # create connection to db
         client = connect()
-        
         begin
             # attempt to insert new user
             results = client.query("insert into Identity (handle, pass, fullname, location, email, bdate, joined) values (\"#{params[:handle]}\", \"#{params[:password]}\", \"#{params[:fullname]}\", \"#{params[:location]}\", \"#{params[:xmail]}\", \"#{params[:bdate]}\", \"#{Date.today.to_s}\");")
@@ -37,9 +36,26 @@ class ApiController < ActionController::API
 
     def seeuser
         if authenticate(params[:handle], params[:password])
-            render json: {handle: params[:handle], pass: params[:password]}.to_json, status: :ok
+            # create connection to db
+            client = connect()
+            begin
+                # attempt to query user info
+                results = client.query("select handle, fullname, location, email, bdate, joined from Identity where idnum = #{params[:userid]};")
+            rescue => exception
+                # catch and render error if there is one
+                render json:{"status":"-2", "error":"#{exception}"}.to_json
+            else
+                # if one user was found return the data
+                if results.count == 1
+                    render json: {"status":"1", "handle":"#{results.first["handle"]}", "fullname":"#{results.first["fullname"]}", "location":"#{results.first["location"]}", 
+                        "email":"#{results.first["email"]}", "bdate":"#{results.first["bdate"]}", "joined":"#{results.first["joined"]}"}.to_json, status: :ok
+                # otherwise return an empty object
+                else
+                    render json: {}.to_json, status: :ok
+                end
+            end
         else
-            render json: {"status_code":"-10", "error":"invalid credentials"}.to_json, status: :ok
+            render json: {"status_code":"-10", "error":"invalid credentials"}.to_json
         end
     end
 
@@ -57,7 +73,7 @@ class ApiController < ActionController::API
             else
                 # if there are no suggestions
                 if results.count == 0
-                    render json: {"status":"0", "error":"no suggestions"}.to_json, status: :ok
+                    render json: {"status":"0", "error":"no suggestions"}.to_json
                 else
                     # build the list of idnums and handles from the results
                     idnums = ""
@@ -76,22 +92,41 @@ class ApiController < ActionController::API
                             handles << "," << row["handle"].to_s
                         end
                     end
-
                     render json: {"status":"#{results.count}", "idnums":"#{idnums}", "handles":"#{handles}"}.to_json, status: :ok
                 end
             end
         # authentication failed
         else
-            render json: {"status_code":"-10", "error":"invalid credentials"}.to_json, status: :ok
+            render json: {"status_code":"-10", "error":"invalid credentials"}.to_json
         end
     end
 
     def poststory
-        
+        if authenticate(params[:handle], params[:password])
+            # user auth worked, create connection for query
+            client = connect()
+            begin
+                if params[:expires]
+                    # handle expires param
+                    results = client.query("insert into Story (idnum, chapter, url, expires) select a.idnum, \"#{params[:chapter]}\", \"#{params[:url]}\", \"#{params[:expires]}\" from Identity as a where a.handle = \"#{params[:handle]}\" and a.pass = \"#{params[:password]}\";")
+                else
+                    # story doesn't expire
+                    results = client.query("insert into Story (idnum, chapter, url) select a.idnum, \"#{params[:chapter]}\", \"#{params[:url]}\" from Identity as a where a.handle = \"#{params[:handle]}\" and a.pass = \"#{params[:password]}\";")
+                end
+            rescue => exception
+                # catch and render error if there is one
+                render json:{"status":"0", "error":"#{exception}"}.to_json
+            else
+                # return status 1 to indicate success
+                render json: {"status":"1"}.to_json, status: :ok
+            end
+        else
+            render json: {"status_code":"-10", "error":"invalid credentials"}.to_json
+        end
     end
 
     def reprint
-        
+
     end
 
     def follow
