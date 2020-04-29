@@ -22,3 +22,9 @@ insert into Identity (handle, pass, fullname, location, email, bdate, joined) va
 
 /*block*/
 insert into Block (idnum, blocked) select a.idnum, 2 from Identity as a where a.handle = "@snapoleon0" and a.pass = "xZmN6L" and not exists(select * from Identity as a inner join Block as b on (a.idnum = b.idnum and a.handle = "@snapoleon0" and b.blocked = 2));
+
+/*isBlocked*/
+select 1 from Identity as a inner join Block as b on (a.idnum = b.blocked) where a.idnum = 1 and b.idnum = 2;
+
+/*timeline*/
+select "story" as type, c.idnum as author, c.chapter as chapter, c.tstamp as posted from Identity as a inner join Follows as b on (a.idnum = b.follower) inner join Story as c on (b.followed = c.idnum) where a.handle = "@snapoleon0" UNION select "reprint", y.idnum, y.chapter, y.tstamp from Identity as q inner join Follows as x on (q.idnum = x.follower) inner join Reprint as t on (x.followed = t.idnum) inner join Story as y on (t.sidnum = y.sidnum) where q.handle = "@snapoleon0";
