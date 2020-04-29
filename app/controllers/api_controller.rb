@@ -1,22 +1,51 @@
 class ApiController < ActionController::API
     
+    # =============================
+    #     Helper Functions
+    # =============================
+
     def connect
         client = Mysql2::Client.new(:host => "localhost", :username => "root", :password => "ZoeqxUDQbBxuHA7mGX7p", :database => "SMPDB")
         return client
     end
 
+    # authenticates the handle + password combination, and if is valid returns the idnum of that user
     def authenticate(handle, password)
         client = connect()
-
-        results = client.query("SELECT * FROM Identity i WHERE (i.handle = \"#{handle}\") AND (i.pass = \"#{password}\")")
-
+        results = client.query("SELECT idnum FROM Identity i WHERE (i.handle = \"#{handle}\") AND (i.pass = \"#{password}\")")
         if results.count == 1
-            return true
+            return results.first["idnum"]
         else
             return false
         end
     end
     
+    def is_blocked(this_user_id, other_user_id)
+        client = connect()
+        # queries if this_user (the user submitting to the API) is blocked by other_user
+        results = client.query("select 1 from Identity as a inner join Block as b on (a.idnum = b.blocked) where a.idnum = #{this_user_id} and b.idnum = #{other_user_id};")
+        # if empty set is returned then this_user is not blocked by other_user
+        if results.count == 0
+            return false;
+        else 
+            return true;
+        end
+    end
+
+    def get_idnum_from_storyid(storyid)
+        client = connect()
+        results = client.query("select idnum from Story where sidnum = #{storyid}")
+        if results.count == 0
+            return false
+        else
+            return results.first["idnum"]
+        end
+    end
+
+    # =============================
+    #    API Route Handlers
+    # =============================
+
     def createuser
         # create connection to db
         client = connect()
@@ -126,7 +155,38 @@ class ApiController < ActionController::API
     end
 
     def reprint
-
+        # authenticate returns idnum if handle+password combination works, so store it
+        if ( this_user_id = authenticate(params[:handle], params[:password]) )
+            # get the id of the user that owns the story attempting to be reprinted
+            # if get_idnum_from_storyid returns false it means the story could not be found, handle that here
+            if ( story_owners_id = get_idnum_from_storyid(params[:storyid]) )
+                # check if the user trying to reprint is blocked by user that owns the story
+                if (is_blocked(this_user_id, story_owners_id))
+                    render json:{"status":"0", "error":"blocked"}.to_json
+                # otherwise attempt to reprint
+                else
+                    # user auth worked and user is not blocked - create connection for query
+                    client = connect()
+                    begin
+                        # if likeit is omitted then it defaults to false
+                        if params[:likeit].nil?
+                            params[:likeit] = false
+                        end
+                        # run query
+                        results = client.query("insert into Reprint (idnum, sidnum, likeit) select a.idnum, #{params[:storyid]}, #{params[:likeit]} from Identity as a where a.handle = \"#{params[:handle]}\" and a.pass = \"#{params[:password]}\";")
+                    rescue => exception
+                        render json:{"status":"-2", "error":"#{exception}"}.to_json
+                    else
+                        # return status 1 to indicate success
+                        render json: {"status":"1"}.to_json, status: :ok
+                    end
+                end
+            else
+                render json:{"status":"0", "error":"story not found"}.to_json
+            end
+        else
+            render json: {"status_code":"-10", "error":"invalid credentials"}.to_json
+        end
     end
 
     def follow
