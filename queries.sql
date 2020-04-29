@@ -1,0 +1,25 @@
+
+/*see user*/
+SELECT * from Identity where handle = "<username>" and pass = "<password>";
+
+
+/*new Story*/
+insert into Story (idnum, chapter, url, expires) select a.idnum, "this is a test", "testurl.com", "2020/12/12 00:00:00" from Identity as a where a.handle = "@snapoleon0" and a.pass = "xZmN6L";
+
+/*follow*/
+insert into Follows (follower, followed) select a.idnum, 2 from Identity as a where (a.handle = "@snapoleon0" and a.pass = "xZmN6L") and not (exists (Select f.idnum from Identity as f inner join Block as b on (f.idnum = b.blocked) inner join Identity as g on (b.idnum = g.idnum) where f.handle = "@snapoleon0" and g.idnum = 2) or exists (select x.followed from Identity as y inner join Follows as x on (y.idnum = x.follower and y.handle = "@snapoleon0" and x.followed = 2)));
+
+/*suggestions*/
+select s.idnum, s.handle from Identity as a inner join Follows as b on (a.idnum = b.follower) inner join Follows as c on (b.followed = c.follower) inner join Identity as s on (c.followed = s.idnum) where a.handle = "@snapoleon0" and a.pass = "xZmN6L" and s.handle != "@snapoleon0" and s.idnum not in (select x.followed from Identity as y inner join Follows as x on (y.idnum = x.follower and y.handle = "@snapoleon0")) LIMIT 4;
+
+/*unfollow*/
+delete from Follows where follower = (select a.idnum from Identity as a where a.handle = "@snapoleon0" and a.pass = "xZmN6L") and followed = 2;
+
+/*Reprint*/
+insert into Reprint (idnum, sidnum, likeit) select a.idnum, 27, true from Identity as a where a.handle = "@snapoleon0" and a.pass = "xZmN6L" and not (exists (Select f.idnum from Identity as f inner join Block as b on (f.idnum = b.blocked) inner join Identity as g on (b.idnum = g.idnum) inner join Story as r on (g.idnum = r.idnum) where r.sidnum = 27 and f.handle = "@snapoleon0"));
+
+/*new user*/
+insert into Identity (handle, pass, fullname, location, email, bdate, joined) values ("@coleterrell", "test123", "Cole Terrell", "Lexington", "cole.terrell@uky.edu", "1997/10/06", "2020/04/28");
+
+/*block*/
+insert into Block (idnum, blocked) select a.idnum, 2 from Identity as a where a.handle = "@snapoleon0" and a.pass = "xZmN6L" and not exists(select * from Identity as a inner join Block as b on (a.idnum = b.idnum and a.handle = "@snapoleon0" and b.blocked = 2));
