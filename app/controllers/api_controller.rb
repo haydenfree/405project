@@ -1,5 +1,7 @@
 class ApiController < ActionController::API
-    
+    # Hayden Free
+    # Cole Terrell
+
     # =============================
     #     Helper Functions
     # =============================

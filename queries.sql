@@ -1,3 +1,5 @@
+-- Hayden Free
+-- Cole Terrell
 
 /*see user*/
 select handle, fullname, location, email, bdate, joined from  Identity where idnum = 2 and not (exists (select 1 from Identity as x inner join Block as y on (x.idnum = y.blocked) where x.handle = "@snapoleon0" and y.idnum = 2));

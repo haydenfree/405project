@@ -3,6 +3,8 @@
 -- Host: localhost    Database: SMPDB
 -- ------------------------------------------------------
 -- Server version	10.1.44-MariaDB-0ubuntu0.18.04.1
+-- Hayden Free
+-- Cole Terrell
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;

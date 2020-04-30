@@ -1,3 +1,5 @@
+-- Hayden Free
+-- Cole Terrell
 USE mysql;
 DROP DATABASE SMPDB_test;
 CREATE DATABASE SMPDB_test;
